@@ -1,1 +1,1 @@
-worker: python CloutBot.py
+worker: python SugoiBot.py
