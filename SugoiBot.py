@@ -71,7 +71,7 @@ async def sql(ctx, *args):
         statement = " ".join(args)
 
         if args[0] == 'SELECT':
-            if sqlEXE(statement) != None:
+            if str(sqlEXE(statement)) != "[]":
                 await ctx.send(sqlEXE(statement))
             else:
                 await ctx.send("No matching records found.")
@@ -83,7 +83,7 @@ async def sql(ctx, *args):
 
 # Check if a thing is in the database
 def thingInList(thing, table):
-    if sqlEXE(f"SELECT * FROM {table}") != None:
+    if str(sqlEXE(f"SELECT * FROM {table}")) != "[]":
         for item in sqlEXE(f"SELECT * FROM {table}"):
             if item[0] == thing:
                 return True
