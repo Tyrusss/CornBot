@@ -77,6 +77,7 @@ async def sql(ctx, *args):
                 await ctx.send("No matching records found.")
         else:
             sqlEXE(statement)
+            await ctx.add_reaction("\U0001F44D")
     else:
         await ctx.send("You don't have permission to use this command")
 
