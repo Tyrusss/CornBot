@@ -1,7 +1,6 @@
 import random
 import asyncio
 import discord
-import csv
 import re
 import psycopg2
 
