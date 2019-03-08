@@ -79,7 +79,7 @@ async def sql(ctx, *args):
         else:
             sqlEXE(statement)
     else:
-        ctx.send("You don't have permission to use this command")
+        await ctx.send("You don't have permission to use this command")
 
 # Check if a thing is in the database
 def thingInList(thing, table):
