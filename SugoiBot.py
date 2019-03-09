@@ -359,9 +359,16 @@ async def Accept(ctx, *args):
     if ctx.message.author.id == 142485371987427328:
         game = " ".join(args)
 
-        addGame(str(game), "142485371987427328", True)
-        sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{game.title()}'")
-        await ctx.send(f"{game.title()} added to the list. View it with c!games")
+        if thingInList(game, 'games_pending'):
+            addGame(str(game), "142485371987427328", True)
+            sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{game.title()}'")
+            await ctx.send(f"{game.title()} added to the list. View it with c!games")
+
+            suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{game.title()}';"))[2:-3])
+            suggestor = client.get_user(suggestor)
+            await suggestor.send(f"Sugoi Boy has accepted your suggestion: {game.title()}")
+        else:
+            await ctx.send(f"{game.title()} is not pending. Use c!games pending")
     else:
         await ctx.send("You don't have permisssion to use this command")
 
@@ -381,6 +388,12 @@ async def Reject(ctx, *args):
         if thingInList(game.title(), 'games_pending'):
             sqlEXE(f"UPDATE games_pending SET status='Rejected' WHERE game_name = '{game.title()}'")
             await ctx.send(f"Rejection of {game.title()} successful.")
+        else:
+            await ctx.send(f"{game.title()} is not in the list. Use c!games pending")
+
+        suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{game.title()}';"))[2:-3])
+        suggestor = client.get_user(suggestor)
+        await suggestor.send(f"Sugoi Boy has rejected your suggestion: {game.title()}")
 
 # Command to list all games in Games_List
 @client.command(name = "Games",
