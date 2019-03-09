@@ -359,7 +359,7 @@ async def Accept(ctx, *args):
     if ctx.message.author.id == 142485371987427328:
         game = " ".join(args)
 
-        if thingInList(game, 'games_pending'):
+        if thingInList(game.title(), 'games_pending'):
             addGame(str(game), "142485371987427328", True)
             sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{game.title()}'")
             await ctx.send(f"{game.title()} added to the list. View it with c!games")
