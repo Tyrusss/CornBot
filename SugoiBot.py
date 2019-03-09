@@ -6,7 +6,6 @@ import psycopg2
 
 from discord.ext.commands import Bot
 from discord import Game
-from operator import itemgetter
 from os import environ
 
 # The command prefix & bot token (KEEP TOKEN SECRET)
