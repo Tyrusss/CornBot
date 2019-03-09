@@ -390,6 +390,7 @@ async def Reject(ctx, *args):
             await ctx.send(f"Rejection of {game.title()} successful.")
         else:
             await ctx.send(f"{game.title()} is not in the list. Use c!games pending")
+            return
 
         suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{game.title()}';"))[2:-3])
         suggestor = client.get_user(suggestor)
