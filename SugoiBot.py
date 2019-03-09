@@ -12,6 +12,7 @@ from os import environ
 # The command prefix & bot token (KEEP TOKEN SECRET)
 commandPrefix, TOKEN = "c!", environ["TOKEN"]
 helpCommand = f'{commandPrefix}help'
+Owner_id = 142485371987427328
 
 # Initialise the client
 client = Bot(command_prefix=commandPrefix)
@@ -67,7 +68,7 @@ def sqlEXE(statement):
 # Command to send raw sql statements
 @client.command()
 async def sql(ctx, *args):
-    if ctx.message.author.id == 237585716836696065 or ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == 237585716836696065 or ctx.message.author.id == Owner_id:
         statement = " ".join(args)
 
         if args[0] == 'SELECT':
@@ -124,7 +125,7 @@ def addGame(game, userID, param):
         return "That game has already been suggested!"
 
 
-    if userID == '142485371987427328':
+    if userID == str(Owner_id):
         sqlEXE(f"INSERT INTO games_list(game_name, votes) VALUES('{game.title()}', 0)")
         return f"Added {game.title()} to the list of games. Vote for it with 'c!vote <game>'."
     else:
@@ -138,7 +139,7 @@ def addGame(game, userID, param):
                 aliases = ["UserAdd", "InitUser", "adduser", "useradd", "inituser", "auser", "aUser"]
                 )
 async def AddUser(ctx, member : discord.Member):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         if initUser(member):
             await ctx.send(f"<@{member.id}> has been added to the list")
             await ctx.send("They have started with 0 points.")
@@ -154,7 +155,7 @@ async def AddUser(ctx, member : discord.Member):
                 aliases = ["UserDel", "deluser", "userdel", "duser", "dUser"]
                 )
 async def DelUser(ctx, member : discord.Member):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         if delUser(str(member.id)):
             await ctx.send(f"{member.name} has been deleted from the database")
         else:
@@ -177,7 +178,7 @@ async def award(ctx, member : discord.Member, points):
         await ctx.send("That's not a valid argument (Must be an integer above 0).")
         return
 
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         initUser(member)
         sqlEXE(f"UPDATE points_list SET user_points = user_points + {points}")    
         await ctx.send(f"{member.display_name} has been awarded {points} point(s).")
@@ -199,7 +200,7 @@ async def punish(ctx, member : discord.Member, points):
         await ctx.send("That's not a valid argument (Must be an integer above 0).")
         return
 
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         initUser(member)
         sqlEXE(f"UPDATE points_list SET user_points = user_points - {points}")    
         await ctx.send(f"{member.display_name} has had {points} point(s) taken.")
@@ -230,7 +231,7 @@ async def points(ctx, member : discord.Member = None):
                 aliases = ["resetpoints"]
                 )
 async def resetPoints(ctx):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         await ctx.send("This will set all users' points to 0. Are you sure? (y/n)")
         def pred(m):
             return m.author == ctx.message.author and m.channel == ctx.message.channel
@@ -255,7 +256,7 @@ async def resetPoints(ctx):
                 aliases = ["AddR", "addreward", "AddReward", "newreward", "addr"]
                 )
 async def NewReward(ctx, *args):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         
         if len(args) == 0:
             await ctx.send("You can't have a reward with no name.")
@@ -305,7 +306,7 @@ async def NewReward(ctx, *args):
                 aliases = ["DelR", "delr", "delreward"]
                 )
 async def DeleteReward(ctx, *args):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         if len(args) == 0:
             await ctx.send("You have to specify a reward to delete.")
         else:
@@ -345,8 +346,8 @@ async def nominate(ctx, *args):
     
     result = addGame(game, str(ctx.message.author.id), False)
     await ctx.send(result)
-    if KeywordInMessage("pending")(result) and ctx.message.author.id != 142485371987427328:
-        Sugoi_Boy = client.get_user(142485371987427328)
+    if KeywordInMessage("pending")(result) and ctx.message.author.id != Owner_id:
+        Sugoi_Boy = client.get_user(Owner_id)
         await Sugoi_Boy.send(f"{ctx.message.author.name} has nominated {game.title()}.\n\nUse c!accept {game.title()}\nor c!reject {game.title()}")
 
 # Command to accept a suggestion
@@ -356,11 +357,11 @@ async def nominate(ctx, *args):
                 aliases = ["accept"]
                 )
 async def Accept(ctx, *args):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         game = " ".join(args)
 
         if thingInList(game.title(), 'games_pending'):
-            addGame(str(game), "142485371987427328", True)
+            addGame(str(game), str(Owner_id), True)
             sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{game.title()}'")
             await ctx.send(f"{game.title()} added to the list. View it with c!games")
 
@@ -379,7 +380,7 @@ async def Accept(ctx, *args):
                 aliases = ["reject"]
                 )
 async def Reject(ctx, *args):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         game = " ".join(args)
 
         if thingInList(game.title(), 'games_list'):
@@ -405,7 +406,7 @@ async def Reject(ctx, *args):
 async def Games(ctx, v_p = None):
     if v_p: v_p = v_p.title()
 
-    if v_p == 'Pending' and ctx.message.author.id == 142485371987427328:
+    if v_p == 'Pending' and ctx.message.author.id == Owner_id:
         em = discord.Embed(title="Pending games", colour=0xA366FF)
         
         for record in sqlEXE("SELECT * FROM games_pending"):
@@ -415,7 +416,7 @@ async def Games(ctx, v_p = None):
         em = discord.Embed(title="Games", colour=0xA366FF)
 
         for record in sqlEXE("SELECT * FROM games_list"):
-            if v_p == "Votes" and ctx.message.author.id == 142485371987427328:
+            if v_p == "Votes" and ctx.message.author.id == Owner_id:
                 em.add_field(name=f"{record[0]} | Votes: {record[1]}", value=f"c!vote {record[0]}", inline=False)
             else:
                 em.add_field(name=record[0], value=f"c!vote {record[0]}", inline=False)
@@ -429,7 +430,7 @@ async def Games(ctx, v_p = None):
                 aliases = ["resetgames"]
                 )
 async def resetGames(ctx):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         await ctx.send("This will delete all of the games in both the pending & accepted tables. Are you sure? (y/n)")
         
         def pred(m):
@@ -490,7 +491,7 @@ async def Vote(ctx, *args):
                 aliases = ["top"]
                 )
 async def top3(ctx):
-    if ctx.message.author.id == 142485371987427328:
+    if ctx.message.author.id == Owner_id:
         em = discord.Embed(title="Top games", colour=0xA366FF)
         
         stop = 0
@@ -537,7 +538,7 @@ async def redeem(ctx, *args):
             
             await ctx.send(f"Success! Your new balance is {user_points - reward_cost}.")
 
-            Sugoi_Boy = client.get_user(142485371987427328)
+            Sugoi_Boy = client.get_user(Owner_id)
             await Sugoi_Boy.send(f"{ctx.message.author.name} has redeemed {reward.title()}.")
         elif sure.content.title() == 'N':
             await ctx.send("Well why did you invoke this command then? smh")
