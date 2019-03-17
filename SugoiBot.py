@@ -262,6 +262,9 @@ async def NewReward(ctx, *args):
             return
 
         rewardName = " ".join(args)
+        if '"' in rewardName or "'" in rewardName:
+            rewardName = rewardName.replace("'", "")
+            rewardName = rewardName.replace('"', "")
 
         if thingInList(rewardName, 'rewards_list'):
             await ctx.send(f"'{rewardName}' is already in the list.")
@@ -342,6 +345,9 @@ async def rewards(ctx):
 async def nominate(ctx, *args):
     initUser(ctx.message.author)
     game = " ".join(args)
+    if "'" in game or '"' in game:
+        game = game.replace('"', '')
+        game = game.replace("'", '')
     
     result = addGame(game, str(ctx.message.author.id), False)
     await ctx.send(result)
