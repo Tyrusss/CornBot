@@ -179,7 +179,7 @@ async def award(ctx, member : discord.Member, points):
 
     if ctx.message.author.id == Owner_id:
         initUser(member)
-        sqlEXE(f"UPDATE points_list SET user_points = user_points + {points}")    
+        sqlEXE(f"UPDATE points_list SET user_points = user_points + {points} WHERE user_id = '{str(member.id)} ' ")    
         await ctx.send(f"{member.display_name} has been awarded {points} point(s).")
     else:
         await ctx.send("You don't have permission to use that command.")
