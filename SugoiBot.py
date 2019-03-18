@@ -320,7 +320,7 @@ async def DeleteReward(ctx, *args):
             await ctx.send("You have to specify a reward to delete.")
         else:
             reward = " ".join(args)
-            if thingInList(reward, 'rewards_list'):
+            if thingInList(reward.title(), 'rewards_list'):
                 sqlEXE(f"DELETE FROM rewards_list WHERE reward_name = '{reward.title()}'")
                 await ctx.send("Reward deleted")
             else:
