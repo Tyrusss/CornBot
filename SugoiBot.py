@@ -280,11 +280,13 @@ async def NewReward(ctx, *args):
             await ctx.send("Cancelled the reward-creator.")
             return
 
-        if '"' in rewardDesc or "'" in rewardDesc or '’' in rewardDesc:
-            rewardDesc = rewardDesc.replace("'", "")
-            rewardDesc = rewardDesc.replace('"', "")
-            rewardDesc = rewardDesc.replace('’', '')
-        
+        if '"' in rewardDesc.content or "'" in rewardDesc.content or '’' in rewardDesc.content:
+            rewardDesc = rewardDesc.content.replace("'", "")
+            rewardDesc = rewardDesc.content.replace('"', "")
+            rewardDesc = rewardDesc.content.replace('’', '')
+        else:
+            rewardDesc = rewardDesc.content
+
         await ctx.send("And how many points will it take to redeem this reward? (Type '#cancel#' to cancel this reward)")
         rewardCost = await client.wait_for("message", check=pred)
 
@@ -301,7 +303,7 @@ async def NewReward(ctx, *args):
             await ctx.send("That's not a valid price (Must be an integer more than 0).")
             return
 
-        sqlEXE(f"INSERT INTO rewards_list(reward_name, reward_desc, price) VALUES('{rewardName.title()}', '{rewardDesc.content}', {rewardCost})")
+        sqlEXE(f"INSERT INTO rewards_list(reward_name, reward_desc, price) VALUES('{rewardName.title()}', '{rewardDesc}', {rewardCost})")
 
         await ctx.send(f"Reward '{rewardName.title()}' succesfully added to list.")
     else:
