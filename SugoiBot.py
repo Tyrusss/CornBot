@@ -7,6 +7,7 @@ import psycopg2
 from discord.ext.commands import Bot
 from discord import Game
 from os import environ
+from string import capwords
 
 # The command prefix & bot token (KEEP TOKEN SECRET)
 commandPrefix, TOKEN = "c!", environ["TOKEN"]
@@ -118,18 +119,17 @@ def addGame(game, userID, param):
     if len(game) == 0:
         return "You can't add a game with no name."
 
-    if thingInList(game.title(), 'games_list'):
+    if thingInList(capwords(game), 'games_list'):
         return "That game is already in the list! use c!games"
-    if param == False and thingInList(game.title(), 'games_pending'):
+    if param == False and thingInList(capwords(game), 'games_pending'):
         return "That game has already been suggested!"
 
-
     if userID == str(Owner_id):
-        sqlEXE(f"INSERT INTO games_list(game_name, votes) VALUES('{game.title()}', 0)")
-        return f"Added {game.title()} to the list of games. Vote for it with 'c!vote <game>'."
+        sqlEXE(f"INSERT INTO games_list(game_name, votes) VALUES($${capwords(game)}$$, 0)")
+        return f"Added {capwords(game)} to the list of games. Vote for it with 'c!vote <game>'."
     else:
-        sqlEXE(f"INSERT INTO games_pending(game_name, suggestor, status) VALUES('{game.title()}', '{userID}', 'Pending')")
-        return f"Added {game.title()} to the pending list, now just gotta wait for Sugoi Boy to deal with it."
+        sqlEXE(f"INSERT INTO games_pending(game_name, suggestor, status) VALUES($${capwords(game)}$$, $${userID}$$, 'Pending')")
+        return f"Added {capwords(game)} to the pending list, now just gotta wait for Sugoi Boy to deal with it."
 
 # Command to add user to points list
 @client.command(name = "AddUser",
@@ -262,10 +262,6 @@ async def NewReward(ctx, *args):
             return
 
         rewardName = " ".join(args)
-        if '"' in rewardName or "'" in rewardName or '’' in rewardName:
-            rewardName = rewardName.replace("'", "")
-            rewardName = rewardName.replace('"', "")
-            rewardName = rewardName.replace('’', '')
 
         if thingInList(rewardName, 'rewards_list'):
             await ctx.send(f"'{rewardName}' is already in the list.")
@@ -281,10 +277,6 @@ async def NewReward(ctx, *args):
             return
 
         rewardDesc = rewardDesc.content
-        if '"' in rewardDesc or "'" in rewardDesc or '’' in rewardDesc:
-            rewardDesc = rewardDesc.replace("'", "")
-            rewardDesc = rewardDesc.replace('"', "")
-            rewardDesc = rewardDesc.replace('’', '')
 
         await ctx.send("And how many points will it take to redeem this reward? (Type '#cancel#' to cancel this reward)")
         rewardCost = await client.wait_for("message", check=pred)
@@ -302,9 +294,9 @@ async def NewReward(ctx, *args):
             await ctx.send("That's not a valid price (Must be an integer more than 0).")
             return
 
-        sqlEXE(f"INSERT INTO rewards_list(reward_name, reward_desc, price) VALUES('{rewardName.title()}', '{rewardDesc}', {rewardCost})")
+        sqlEXE(f"INSERT INTO rewards_list(reward_name, reward_desc, price) VALUES($${capwords(rewardName)}$$, $${rewardDesc}$$, {rewardCost})")
 
-        await ctx.send(f"Reward '{rewardName.title()}' succesfully added to list.")
+        await ctx.send(f"Reward '{capwords(rewardName)}' succesfully added to list.")
     else:
         await ctx.send("You don't have permission to use that command.")
 
@@ -320,8 +312,8 @@ async def DeleteReward(ctx, *args):
             await ctx.send("You have to specify a reward to delete.")
         else:
             reward = " ".join(args)
-            if thingInList(reward.title(), 'rewards_list'):
-                sqlEXE(f"DELETE FROM rewards_list WHERE reward_name = '{reward.title()}'")
+            if thingInList(capwords(reward), 'rewards_list'):
+                sqlEXE(f"DELETE FROM rewards_list WHERE reward_name = '{capwords(reward)}'")
                 await ctx.send("Reward deleted")
             else:
                 await ctx.send("There is no reward by that name")
@@ -353,16 +345,12 @@ async def rewards(ctx):
 async def nominate(ctx, *args):
     initUser(ctx.message.author)
     game = " ".join(args)
-    if "'" in game or '"' in game or '’' in game:
-        game = game.replace('"', '')
-        game = game.replace("'", '')
-        game = game.replace('’', '')
     
     result = addGame(game, str(ctx.message.author.id), False)
     await ctx.send(result)
     if KeywordInMessage("pending")(result) and ctx.message.author.id != Owner_id:
         Sugoi_Boy = client.get_user(Owner_id)
-        await Sugoi_Boy.send(f"{ctx.message.author.name} has nominated {game.title()}.\n\nUse c!accept {game.title()}\nor c!reject {game.title()}")
+        await Sugoi_Boy.send(f"{ctx.message.author.name} has nominated {capwords(game)}.\n\nUse c!accept {capwords(game)}\nor c!reject {capwords(game)}")
 
 # Command to accept a suggestion
 @client.command(name = "Accept",
