@@ -280,6 +280,11 @@ async def NewReward(ctx, *args):
             await ctx.send("Cancelled the reward-creator.")
             return
 
+        if '"' in rewardDesc or "'" in rewardDesc or '’' in rewardDesc:
+            rewardDesc = rewardDesc.replace("'", "")
+            rewardDesc = rewardDesc.replace('"', "")
+            rewardDesc = rewardDesc.replace('’', '')
+        
         await ctx.send("And how many points will it take to redeem this reward? (Type '#cancel#' to cancel this reward)")
         rewardCost = await client.wait_for("message", check=pred)
 
