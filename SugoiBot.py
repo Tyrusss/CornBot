@@ -515,8 +515,11 @@ async def daily(ctx):
 
 # If ^ invoked on cooldown
 @client.event
-async def on_command_error(ctx, CommandOnCooldown):
-    await ctx.send(f"You already collected today's daily!")
+async def on_command_error(ctx, error):
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send(f"You already collected today's daily!")
+    else:
+        raise error
 
 # Command to show top games
 @client.command(name = "Top",
