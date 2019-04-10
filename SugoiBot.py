@@ -3,6 +3,7 @@ import discord
 import re
 import psycopg2
 
+from discord.ext import commands
 from discord.ext.commands import Bot
 from discord import Game
 from os import environ
@@ -38,6 +39,7 @@ ResetGames  Delete all games in the lists
 Vote        Vote for a game
 Top         Show top games
 Redeem      Redeem a reward
+Daily       Collect 100 points once per day
 
 Type c!help command for more info on a command.
 You can also type c!help category for more info on a category.```""")
@@ -100,7 +102,7 @@ async def id(ctx, member : discord.Member = ''):
 # Add a user to the points list
 def initUser(member : discord.Member):
     if thingInList(str(member.id), 'points_list') == False: # Add member to list with 0 points
-        sqlEXE(f"INSERT INTO points_list(user_id, user_points) VALUES('{str(member.id)}', 0)")
+        sqlEXE(f"INSERT INTO points_list(user_id, user_points, game_voted) VALUES('{str(member.id)}', 0, FALSE)")
         return True
     else:
         return False
@@ -344,12 +346,22 @@ async def rewards(ctx):
 async def nominate(ctx, *args):
     initUser(ctx.message.author)
     game = " ".join(args)
-    
-    result = addGame(game, str(ctx.message.author.id), False)
-    await ctx.send(result)
-    if KeywordInMessage("pending")(result) and ctx.message.author.id != Owner_id:
-        Sugoi_Boy = client.get_user(Owner_id)
-        await Sugoi_Boy.send(f"{ctx.message.author.name} has nominated {capwords(game)}.\n\nUse c!accept {capwords(game)}\nor c!reject {capwords(game)}")
+    user_points = sqlEXE(f"SELECT user_points FROM points_list WHERE user_id = '{ctx.message.author.id}'")
+    user_points = int(str(user_points)[2:-3])
+
+    if ctx.message.author.id != Owner_id:
+        if user_points >= 300:
+            result = addGame(game, str(ctx.message.author.id), False)
+            await ctx.send(result)
+            if KeywordInMessage("pending")(result):
+                Sugoi_Boy = client.get_user(Owner_id)
+                await Sugoi_Boy.send(f"{ctx.message.author.name} has nominated {capwords(game)}.\n\nUse c!accept {capwords(game)}\nor c!reject {capwords(game)}")
+            sqlEXE(f"UPDATE points_list SET user_points = user_points - 300 WHERE user_id = '{str(ctx.message.author.id)}';")
+        else:
+            await ctx.send("You don't have enough points! You need 300 to nominate a game.")
+    else:
+        result = addGame(game, str(ctx.message.author.id), False)
+        await ctx.send(result)
 
 # Command to accept a suggestion
 @client.command(name = "Accept",
@@ -360,17 +372,22 @@ async def nominate(ctx, *args):
 async def Accept(ctx, *args):
     if ctx.message.author.id == Owner_id:
         game = " ".join(args)
+        status = sqlEXE(f"SELECT status FROM games_pending WHERE game_name = '{capwords(game)}';")
 
-        if thingInList(game.title(), 'games_pending'):
+        if str(status[0]) != "('Pending',)":
+            await ctx.send("You have already judged this game.")
+            return
+
+        if thingInList(capwords(game), 'games_pending'):
             addGame(str(game), str(Owner_id), True)
-            sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{game.title()}'")
-            await ctx.send(f"{game.title()} added to the list. View it with c!games")
+            sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{capwords(game)}'")
+            await ctx.send(f"{capwords(game)} added to the list. View it with c!games")
 
-            suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{game.title()}';"))[3:-4])
+            suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{capwords(game)}';"))[3:-4])
             suggestor = client.get_user(suggestor)
-            await suggestor.send(f"Sugoi Boy has accepted your suggestion: {game.title()}")
+            await suggestor.send(f"Sugoi Boy has accepted your suggestion: {capwords(game)}")
         else:
-            await ctx.send(f"{game.title()} is not pending. Use c!games pending")
+            await ctx.send(f"{capwords(game)} is not pending. Use c!games pending")
     else:
         await ctx.send("You don't have permisssion to use this command")
 
@@ -383,20 +400,27 @@ async def Accept(ctx, *args):
 async def Reject(ctx, *args):
     if ctx.message.author.id == Owner_id:
         game = " ".join(args)
+        status = sqlEXE(f"SELECT status FROM games_pending WHERE game_name = '{capwords(game)}';")
 
-        if thingInList(game.title(), 'games_list'):
-            sqlEXE(f"DELETE FROM games_list WHERE game_name = '{game.title()}'")
-            await ctx.send(f"{game.title()} has been deleted from the list.")
-        if thingInList(game.title(), 'games_pending'):
-            sqlEXE(f"UPDATE games_pending SET status='Rejected' WHERE game_name = '{game.title()}'")
-            await ctx.send(f"Rejection of {game.title()} successful.")
-        else:
-            await ctx.send(f"{game.title()} is not in the list. Use c!games pending")
+        if str(status[0]) != "('Pending',)":
+            await ctx.send("You have already judged this game.")
             return
 
-        suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{game.title()}';"))[3:-4])
+        if thingInList(capwords(game), 'games_list'):
+            sqlEXE(f"DELETE FROM games_list WHERE game_name = '{capwords(game)}'")
+            await ctx.send(f"{capwords(game)} has been deleted from the list.")
+        if thingInList(capwords(game), 'games_pending'):
+            sqlEXE(f"UPDATE games_pending SET status='Rejected' WHERE game_name = '{capwords(game)}';")
+            await ctx.send(f"Rejection of {capwords(game)} successful.")
+        else:
+            await ctx.send(f"{capwords(game)} is not in the list. Use c!games pending")
+            return
+
+        suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{capwords(game)}';"))[3:-4])
         suggestor = client.get_user(suggestor)
-        await suggestor.send(f"Sugoi Boy has rejected your suggestion: {game.title()}")
+        sqlEXE(f"UPDATE points_list SET user_points = user_points + 300 WHERE user_id = '{suggestor.id}';")
+
+        await suggestor.send(f"Sugoi Boy has rejected your suggestion: {capwords(game)}\n300 points have been refunded to your balance.")
 
 # Command to list all games in Games_List
 @client.command(name = "Games",
@@ -440,6 +464,7 @@ async def resetGames(ctx):
 
         if sure.content.title() == 'Y':
             sqlEXE("DELETE FROM games_list; DELETE FROM games_pending;")
+            sqlEXE("UPDATE points_list SET game_voted = FALSE;")
             await ctx.send("Succesfully reset.")
         elif sure.content.title() == 'N':
             await ctx.send("Then why did you invoke this command? smh")
@@ -455,35 +480,43 @@ async def resetGames(ctx):
 async def Vote(ctx, *args):
 
     initUser(ctx.message.author)
-        
+    voted = str(sqlEXE(f"SELECT game_voted FROM points_list WHERE user_id = '{str(ctx.message.author.id)}' AND game_voted = 'yes';"))
     game = " ".join(args)
     
-    if thingInList(game.title(), 'games_list'):
-        user_points = sqlEXE(f"SELECT user_points FROM points_list WHERE user_id = '{str(ctx.message.author.id)}'")
-        user_points = int(str(user_points)[2:-3])
+    if thingInList(capwords(game), 'games_list'):
 
-        await ctx.send("How many points do you wish to put into the game's pool?")
-        def pred(m):
-            return m.author == ctx.message.author and m.channel == ctx.message.channel
-        votes = await client.wait_for("message", check=pred)
+        if len(voted) == 2:
+            sqlEXE(f"UPDATE points_list SET game_voted = TRUE WHERE user_id = '{str(ctx.message.author.id)}';")
+            sqlEXE(f"UPDATE games_list SET votes = votes + 1 WHERE game_name = '{capwords(game)}'")
+            await ctx.send(f"{ctx.message.author.mention}, successfully voted for {capwords(game)}.")
 
-        try:
-            votes = int(votes.content)
-            if votes < 1:
-                raise ValueError
-        except ValueError:
-            await ctx.send("Invalid argument (Must be integer >0).")
+        elif len(voted) == 9:
+            await ctx.send("You have already voted! Wait until the next set of nominations to vote again.")
             return
-
-        if user_points >= votes:
-            sqlEXE(f"UPDATE points_list SET user_points = user_points - {votes} WHERE user_id = '{ctx.message.author.id}'")
-            sqlEXE(f"UPDATE games_list SET votes = votes + {votes} WHERE game_name = '{game.title()}'")
-            await ctx.send(f"Success! You now have {user_points - votes}")
-
         else:
-            await ctx.send("You don't have enough points.")
+            await ctx.send("Something's gone wrong. Call Tyrus pls.")
+            print(f"For some reason {str(ctx.message.author.display_name)}'s game_voted attribute is neither 2 nor 9 characters long")
+            return
     else:
-        await ctx.send(f"'{game.title()}' is not in the list. use c!games to see the list of available games to vote for.")
+        await ctx.send("That game is not in the list. Use c!games to see the available games to vote for.")
+
+# Command to claim daily points
+@client.command(name = "daily",
+                description = "Collect your daily points",
+                brief = "Daily points",
+                aliases = ["Daily"])
+@commands.cooldown(1, 60*60*24, commands.BucketType.user)
+async def daily(ctx):
+    sqlEXE(f"UPDATE points_list SET user_points = user_points + 100 WHERE user_id = '{str(ctx.message.author.id)}';")
+    user_points = sqlEXE(f"SELECT user_points FROM points_list WHERE user_id = '{ctx.message.author.id}'")
+    user_points = int(str(user_points)[2:-3])
+
+    await ctx.send(f"Success! Your new balance is {user_points}.")
+
+# If ^ invoked on cooldown
+@client.event
+async def on_command_error(ctx, CommandOnCooldown):
+    await ctx.send(f"You already collected today's daily!")
 
 # Command to show top games
 @client.command(name = "Top",
@@ -580,7 +613,7 @@ async def on_ready():
     print('------')
 
     if str(sqlEXE("SELECT EXISTS(SELECT * FROM information_schema.tables where table_name = 'points_list');")) == "[(False,)]":
-        sqlEXE("CREATE TABLE points_list(user_id TEXT PRIMARY KEY, user_points INTEGER)")
+        sqlEXE("CREATE TABLE points_list(user_id TEXT PRIMARY KEY, user_points INTEGER, game_voted BOOLEAN)")
         print("init points_list")
     if str(sqlEXE("SELECT EXISTS(SELECT * FROM information_schema.tables where table_name = 'rewards_list');")) == "[(False,)]":
         sqlEXE("CREATE TABLE rewards_list(reward_name TEXT PRIMARY KEY, reward_desc TEXT, price INTEGER)")
