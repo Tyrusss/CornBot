@@ -333,7 +333,7 @@ async def rewards(ctx):
     for record in sqlEXE("SELECT * FROM rewards_list"):
         em.add_field(name=f"{record[0]} | Price: {record[2]}", value=record[1], inline=False)
     
-    em.add_field(name="Pick next stream game", value="Use c!games to view the list of games you can vote for.", inline=False)
+    em.add_field(name="Pick next stream game | Price: 300", value="Use c!games to view the list of games you can vote for.", inline=False)
     em.add_field(name="To redeem", value="Use c!redeem <reward>", inline=False)
     await ctx.send(embed=em)
 
