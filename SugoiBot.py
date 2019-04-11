@@ -374,24 +374,26 @@ async def Accept(ctx, *args):
         game = " ".join(args)
         status = sqlEXE(f"SELECT status FROM games_pending WHERE game_name = '{capwords(game)}';")
 
-        if str(status[0]) != "('Pending',)":
-            await ctx.send("You have already judged this game.")
+        try:
+            if str(status[0]) != "('Pending',)":
+                await ctx.send("You have already judged this game.")
+                return
+        except IndexError:
+            await ctx.send("That game is not in the list.")
             return
 
-        if thingInList(capwords(game), 'games_pending'):
-            addGame(str(game), str(Owner_id), True)
-            sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{capwords(game)}'")
-            await ctx.send(f"{capwords(game)} added to the list. View it with c!games")
+        addGame(str(game), str(Owner_id), True)
+        sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{capwords(game)}'")
+        await ctx.send(f"{capwords(game)} added to the list. View it with c!games")
 
-            suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{capwords(game)}';"))[3:-4])
-            suggestor = client.get_user(suggestor)
-            await suggestor.send(f"Sugoi Boy has accepted your suggestion: {capwords(game)}")
-        else:
-            await ctx.send(f"{capwords(game)} is not pending. Use c!games pending")
+        suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{capwords(game)}';"))[3:-4])
+        suggestor = client.get_user(suggestor)
+        await suggestor.send(f"Sugoi Boy has accepted your suggestion: {capwords(game)}")
+
     else:
         await ctx.send("You don't have permisssion to use this command")
 
-# Command to reject a suggestion/delete a game
+# Command to reject a suggestion
 @client.command(name = "Reject",
                 description = "Reject a game suggestion",
                 brief = "Reject a game suggestion",
@@ -402,19 +404,16 @@ async def Reject(ctx, *args):
         game = " ".join(args)
         status = sqlEXE(f"SELECT status FROM games_pending WHERE game_name = '{capwords(game)}';")
 
-        if str(status[0]) != "('Pending',)":
-            await ctx.send("You have already judged this game.")
+        try:
+            if str(status[0]) != "('Pending',)":
+                await ctx.send("You have already judged this game.")
+                return
+        except IndexError:
+            await ctx.send("That game is not in the list.")
             return
 
-        if thingInList(capwords(game), 'games_list'):
-            sqlEXE(f"DELETE FROM games_list WHERE game_name = '{capwords(game)}'")
-            await ctx.send(f"{capwords(game)} has been deleted from the list.")
-        if thingInList(capwords(game), 'games_pending'):
-            sqlEXE(f"UPDATE games_pending SET status='Rejected' WHERE game_name = '{capwords(game)}';")
-            await ctx.send(f"Rejection of {capwords(game)} successful.")
-        else:
-            await ctx.send(f"{capwords(game)} is not in the list. Use c!games pending")
-            return
+        sqlEXE(f"UPDATE games_pending SET status='Rejected' WHERE game_name = '{capwords(game)}';")
+        await ctx.send(f"Rejection of {capwords(game)} successful.")
 
         suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{capwords(game)}';"))[3:-4])
         suggestor = client.get_user(suggestor)
@@ -513,14 +512,6 @@ async def daily(ctx):
 
     await ctx.send(f"Success! Your new balance is {user_points}.")
 
-# If ^ invoked on cooldown
-@client.event
-async def on_command_error(ctx, error):
-    if isinstance(error, commands.CommandOnCooldown):
-        await ctx.send(f"You already collected today's daily!")
-    else:
-        raise error
-
 # Command to show top games
 @client.command(name = "Top",
                 description = "Show the top voted-for games",
@@ -554,7 +545,7 @@ async def redeem(ctx, *args):
     reward = " ".join(args)
 
     if not thingInList(reward.title(), 'rewards_list'):
-        ctx.send(f"'{reward.title()}' is not in the list. Use c!rewards to see the list of available rewards.")
+        await ctx.send(f"'{reward.title()}' is not in the list. Use c!rewards to see the list of available rewards.")
         return
 
     user_points = sqlEXE(f"SELECT user_points FROM points_list WHERE user_id = '{ctx.message.author.id}'")
@@ -604,6 +595,27 @@ async def on_message(message):
 
     # Allow for commands to be processed while on_message occurs
     await client.process_commands(message)
+
+# Error handling
+@client.event
+async def on_command_error(ctx, error):
+
+    # Command on cooldown
+    if isinstance(error, commands.CommandOnCooldown):
+        await ctx.send(f"You already collected today's daily!")
+
+    # Command not found
+    elif isinstance(error, commands.CommandNotFound):
+        await ctx.send(f"'{ctx.message.content}' isn't a command.")
+
+    # Member not found
+    elif isinstance(error, commands.BadArgument):
+        await ctx.send("Member not found.")
+
+
+    # If not accounted for, raise anyway so we can still see it
+    else:
+        raise error
 
 
 # Stuff that happens on startup
