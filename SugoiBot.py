@@ -576,6 +576,19 @@ async def redeem(ctx, *args):
     else:
         ctx.send("You don't have enough points.")
 
+# Command to hug people
+@client.command(name = "Hug",
+                description = "Show your affection to someone",
+                brief = "Hug someone",
+                aliases = ["hug", "love", "Love"])
+async def hug(ctx, person=None):
+    user = ctx.message.author.display_name
+    
+    if person:
+        await ctx.send(f"{user} hugged {person}!")
+    else:
+        await ctx.send(f"{user} hugged themself!")
+
 # CHECK IF KEYWORD IN MESSAGE
 def KeywordInMessage(word):
     return re.compile(r'\b({0})\b'.format(word), flags=re.IGNORECASE).search
