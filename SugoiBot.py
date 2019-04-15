@@ -462,7 +462,7 @@ async def resetGames(ctx):
         sure = await client.wait_for("message", check=pred)
 
         if sure.content.title() == 'Y':
-            sqlEXE("DELETE FROM games_list; DELETE FROM games_pending;")
+            sqlEXE("DELETE FROM games_list; DELETE FROM games_pending WHERE status != 'Pending';")
             sqlEXE("UPDATE points_list SET game_voted = FALSE;")
             await ctx.send("Succesfully reset.")
         elif sure.content.title() == 'N':
