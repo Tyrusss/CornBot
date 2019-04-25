@@ -606,6 +606,9 @@ async def on_message(message):
         await message.channel.send("Daddy")
         await asyncio.sleep(0.5)
 
+    elif KeywordInMessage("dinkster")(message.content):
+        await ctx.send("https://www.youtube.com/watch?v=bWE6Z3F-RwI")
+
     # Allow for commands to be processed while on_message occurs
     await client.process_commands(message)
 
