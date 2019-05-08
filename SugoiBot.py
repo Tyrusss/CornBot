@@ -20,7 +20,7 @@ client.remove_command("help")
 
 @client.command(name="help")
 async def Help(ctx):
-    await ctx.send("https://i.imgur.com/ZTlvGp2.png")
+    await ctx.send("https://i.imgur.com/5nWJIlo.png")
 
 # When executing sql statements
 def sqlEXE(statement):
