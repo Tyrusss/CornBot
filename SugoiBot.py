@@ -20,29 +20,7 @@ client.remove_command("help")
 
 @client.command(name="help")
 async def Help(ctx):
-    await ctx.send(  """```help        Shows this message.
-id          
-AddUser     Add <member> to doc
-DelUser     Delete <member> from doc
-Award       Award points
-Punish      Take points
-Points      Check points
-ResetPoints Reset all points
-NewReward   Add new reward
-DelReward   Delete a reward
-Rewards     List all rewards
-Nominate    Nominate a game
-Accept      Accept a game suggestion
-Reject      Reject a game suggestion
-Games       List all games in the list
-ResetGames  Delete all games in the lists
-Vote        Vote for a game
-Top         Show top games
-Redeem      Redeem a reward
-Daily       Collect 100 points once per day
-
-Type c!help command for more info on a command.
-You can also type c!help category for more info on a category.```""")
+    await ctx.send("https://i.imgur.com/ZTlvGp2.png")
 
 # When executing sql statements
 def sqlEXE(statement):
