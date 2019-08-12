@@ -2,11 +2,9 @@ import asyncio
 import discord
 import psycopg2
 
-from cogs.utility import thingInList, sqlEXE, initUser
+from cogs.utility import thingInList, sqlEXE, initUser, Owner_id
 from discord.ext import commands
 from discord.ext.commands import Cog
-
-Owner_id = 142485371987427328
 
 class Points(Cog):
     def __init__(self, client):
