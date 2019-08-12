@@ -4,7 +4,7 @@ import re
 import psycopg2
 import cogs.utility
 
-from cogs.utility import thingInList, sqlEXE, initUser, delUser, Utility, KeywordInMessage
+from cogs.utility import thingInList, sqlEXE, initUser, delUser, Utility, KeywordInMessage, Owner_id
 from cogs.points import Points
 from cogs.rewards import Rewards
 from cogs.games import Games
@@ -19,7 +19,6 @@ from os import environ
 # The command prefix & bot token (KEEP TOKEN SECRET)
 commandPrefix, TOKEN = "c!", environ["TOKEN"]
 helpCommand = f'{commandPrefix}help'
-Owner_id = 142485371987427328
 
 # Initialise the client
 client = Bot(command_prefix=commandPrefix)
