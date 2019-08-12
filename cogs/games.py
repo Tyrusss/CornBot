@@ -2,12 +2,10 @@ import asyncio
 import discord
 import psycopg2
 
-from cogs.utility import thingInList, sqlEXE, initUser, KeywordInMessage
+from cogs.utility import thingInList, sqlEXE, initUser, KeywordInMessage, Owner_id
 from discord.ext import commands
 from discord.ext.commands import Cog
 from string import capwords
-
-Owner_id = 142485371987427328
 
 #Adds a game to the list or suggestion
 def addGame(game, userID, param):

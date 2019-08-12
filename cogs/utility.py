@@ -6,7 +6,7 @@ import re
 from discord.ext import commands
 from discord.ext.commands import Cog
 
-Owner_id = 142485371987427328
+Owner_id = 332505589701935104
 
 def sqlEXE(statement):
     con = None
