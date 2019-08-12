@@ -145,7 +145,6 @@ async def on_ready():
         loop = asyncio.get_running_loop()
         asyncio.create_task(twitchget(streaming))
         print(loop)
-        loop.run_forever()
 
 # Actually run the damn thing
 client.run(TOKEN)
