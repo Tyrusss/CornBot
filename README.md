@@ -1,1 +1,1 @@
-# Sugoi Sugoi
+A points-rewards system for Discord
