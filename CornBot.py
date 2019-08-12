@@ -33,7 +33,7 @@ if __name__ == '__main__':
 
 streaming = False
 async def twitchget(streaming):
-    channel = client.get_channel(530839318424584193)
+    channel = client.get_channel(502233377965867010)
     while True:
         async with aiohttp.ClientSession() as session:
             async with session.get(
