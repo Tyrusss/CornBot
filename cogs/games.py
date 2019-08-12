@@ -17,12 +17,12 @@ def addGame(game, userID, param):
     if param == False and thingInList(capwords(game), 'games_pending'):
         return "That game has already been suggested!"
 
-    if userID == str(Owner_id):
+    if int(userID) in Owner_id:
         sqlEXE(f"INSERT INTO games_list(game_name, votes) VALUES($${capwords(game)}$$, 0)")
         return f"Added {capwords(game)} to the list of games. Vote for it with 'c!vote <game>'."
     else:
         sqlEXE(f"INSERT INTO games_pending(game_name, suggestor, status) VALUES($${capwords(game)}$$, $${userID}$$, 'Pending')")
-        return f"Added {capwords(game)} to the pending list, now just gotta wait for Sugoi Boy to deal with it."
+        return f"Added {capwords(game)} to the pending list, now just gotta wait for Corny Boy to deal with it."
 
 
 class Games(Cog):
@@ -41,13 +41,13 @@ class Games(Cog):
         user_points = sqlEXE(f"SELECT user_points FROM points_list WHERE user_id = '{ctx.message.author.id}'")
         user_points = int(str(user_points)[2:-3])
 
-        if ctx.message.author.id != Owner_id:
+        if ctx.message.author.id not in Owner_id:
             if user_points >= 300:
                 result = addGame(game, str(ctx.message.author.id), False)
                 await ctx.send(result)
                 if KeywordInMessage("pending")(result):
-                    Sugoi_Boy = self.client.get_user(Owner_id)
-                    await Sugoi_Boy.send(f"{ctx.message.author.name} has nominated {capwords(game)}.\n\nUse c!accept {capwords(game)}\nor c!reject {capwords(game)}")
+                    Cornben = self.client.get_user(Owner_id[0])
+                    await Cornben.send(f"{ctx.message.author.name} has nominated {capwords(game)}.\n\nUse c!accept {capwords(game)}\nor c!reject {capwords(game)}")
                 sqlEXE(f"UPDATE points_list SET user_points = user_points - 300 WHERE user_id = '{str(ctx.message.author.id)}';")
             else:
                 await ctx.send("You don't have enough points! You need 300 to nominate a game.")
@@ -62,7 +62,7 @@ class Games(Cog):
                     aliases = ["accept"]
                     )
     async def Accept(self, ctx, *args):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             game = " ".join(args)
             status = sqlEXE(f"SELECT status FROM games_pending WHERE game_name = '{capwords(game)}';")
 
@@ -74,13 +74,13 @@ class Games(Cog):
                 await ctx.send("That game is not in the list.")
                 return
 
-            addGame(str(game), str(Owner_id), True)
+            addGame(str(game), str(ctx.message.author.id), True)
             sqlEXE(f"UPDATE games_pending SET status='Accepted' WHERE game_name = '{capwords(game)}'")
             await ctx.send(f"{capwords(game)} added to the list. View it with c!games")
 
             suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{capwords(game)}';"))[3:-4])
             suggestor = self.client.get_user(suggestor)
-            await suggestor.send(f"Sugoi Boy has accepted your suggestion: {capwords(game)}")
+            await suggestor.send(f"Corny Boy has accepted your suggestion: {capwords(game)}")
 
         else:
             await ctx.send("You don't have permisssion to use this command")
@@ -92,7 +92,7 @@ class Games(Cog):
                     aliases = ["reject"]
                     )
     async def Reject(self, ctx, *args):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             game = " ".join(args)
             status = sqlEXE(f"SELECT status FROM games_pending WHERE game_name = '{capwords(game)}';")
 
@@ -111,7 +111,7 @@ class Games(Cog):
             suggestor = self.client.get_user(suggestor)
             sqlEXE(f"UPDATE points_list SET user_points = user_points + 300 WHERE user_id = '{suggestor.id}';")
 
-            await suggestor.send(f"Sugoi Boy has rejected your suggestion: {capwords(game)}\n300 points have been refunded to your balance.")
+            await suggestor.send(f"Corny Boy has rejected your suggestion: {capwords(game)}\n300 points have been refunded to your balance.")
 
     # Command to list all games in Games_List
     @commands.command(name = "Games",
@@ -122,7 +122,7 @@ class Games(Cog):
     async def Games(self, ctx, v_p = None):
         if v_p: v_p = v_p.title()
 
-        if v_p == 'Pending' and ctx.message.author.id == Owner_id:
+        if v_p == 'Pending' and ctx.message.author.id in Owner_id:
             em = discord.Embed(title="Pending games", colour=0xA366FF)
             
             for record in sqlEXE("SELECT * FROM games_pending"):
@@ -132,7 +132,7 @@ class Games(Cog):
             em = discord.Embed(title="Games", colour=0xA366FF)
 
             for record in sqlEXE("SELECT * FROM games_list"):
-                if v_p == "Votes" and ctx.message.author.id == Owner_id:
+                if v_p == "Votes" and ctx.message.author.id in Owner_id:
                     em.add_field(name=f"{record[0]} | Votes: {record[1]}", value=f"c!vote {record[0]}", inline=False)
                 else:
                     em.add_field(name=record[0], value=f"c!vote {record[0]}", inline=False)
@@ -146,7 +146,7 @@ class Games(Cog):
                     aliases = ["resetgames"]
                     )
     async def resetGames(self, ctx):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             await ctx.send("This will delete all of the games in both the pending & accepted tables. Are you sure? (y/n)")
             
             def pred(m):
@@ -198,7 +198,7 @@ class Games(Cog):
                     aliases = ["top"]
                     )
     async def top3(self, ctx):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             em = discord.Embed(title="Top games", colour=0xA366FF)
             
             stop = 0

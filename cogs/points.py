@@ -25,7 +25,7 @@ class Points(Cog):
             await ctx.send("That's not a valid argument (Must be an integer above 0).")
             return
 
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             initUser(member)
             sqlEXE(f"UPDATE points_list SET user_points = user_points + {points} WHERE user_id = '{str(member.id)}'")     
             await ctx.send(f"{member.display_name} has been awarded {points} point(s).")
@@ -47,7 +47,7 @@ class Points(Cog):
             await ctx.send("That's not a valid argument (Must be an integer above 0).")
             return
 
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             initUser(member)
             sqlEXE(f"UPDATE points_list SET user_points = user_points - {points} WHERE user_id = '{str(member.id)}'")     
             await ctx.send(f"{member.display_name} has had {points} point(s) taken.")
@@ -78,7 +78,7 @@ class Points(Cog):
                     aliases = ["resetpoints"]
                     )
     async def resetPoints(self, ctx):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             await ctx.send("This will set all users' points to 0. Are you sure? (y/n)")
             def pred(m):
                 return m.author == ctx.message.author and m.channel == ctx.message.channel

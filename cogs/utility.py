@@ -6,7 +6,7 @@ import re
 from discord.ext import commands
 from discord.ext.commands import Cog
 
-Owner_id = 332505589701935104
+Owner_id = [332505589701935104, 237585716836696065]
 
 def sqlEXE(statement):
     con = None
@@ -64,7 +64,7 @@ class Utility(Cog) :
     # Command to send raw sql statements
     @commands.command(hidden=True)
     async def sql(self, ctx, *args):
-        if ctx.message.author.id == 237585716836696065 or ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             statement = " ".join(args)
 
             if args[0] == 'SELECT':
@@ -93,7 +93,7 @@ class Utility(Cog) :
                     aliases = ["UserAdd", "InitUser", "adduser", "useradd", "inituser", "auser", "aUser"]
                     )
     async def AddUser(self, ctx, member : discord.Member):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             if initUser(member):
                 await ctx.send(f"<@{member.id}> has been added to the list")
                 await ctx.send("They have started with 0 points.")
@@ -109,7 +109,7 @@ class Utility(Cog) :
                     aliases = ["UserDel", "deluser", "userdel", "duser", "dUser"]
                     )
     async def DelUser(self, ctx, member : discord.Member):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             if delUser(str(member.id)):
                 await ctx.send(f"{member.name} has been deleted from the database")
             else:

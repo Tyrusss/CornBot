@@ -18,7 +18,7 @@ class Rewards(Cog):
                     aliases = ["AddR", "addreward", "AddReward", "newreward", "addr"]
                     )
     async def NewReward(self, ctx, *args):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             
             if len(args) == 0:
                 await ctx.send("You can't have a reward with no name.")
@@ -70,7 +70,7 @@ class Rewards(Cog):
                     aliases = ["DelR", "delr", "delreward"]
                     )
     async def DeleteReward(self, ctx, *args):
-        if ctx.message.author.id == Owner_id:
+        if ctx.message.author.id in Owner_id:
             if len(args) == 0:
                 await ctx.send("You have to specify a reward to delete.")
             else:
@@ -131,8 +131,8 @@ class Rewards(Cog):
                 
                 await ctx.send(f"Success! Your new balance is {user_points - reward_cost}.")
 
-                Sugoi_Boy = self.client.get_user(Owner_id)
-                await Sugoi_Boy.send(f"{ctx.message.author.name} has redeemed {reward.title()}.")
+                Cornben = self.client.get_user(Owner_id[0])
+                await Cornben.send(f"{ctx.message.author.name} has redeemed {reward.title()}.")
             elif sure.content.title() == 'N':
                 await ctx.send("Well why did you invoke this command then? smh")
             else:

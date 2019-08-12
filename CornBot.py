@@ -4,7 +4,7 @@ import re
 import psycopg2
 import cogs.utility
 
-from cogs.utility import thingInList, sqlEXE, initUser, delUser, Utility, KeywordInMessage, Owner_id
+from cogs.utility import thingInList, sqlEXE, initUser, delUser, Utility, KeywordInMessage
 from cogs.points import Points
 from cogs.rewards import Rewards
 from cogs.games import Games
