@@ -6,6 +6,7 @@ import aiohttp
 
 from discord.ext import commands
 from discord.ext.commands import Cog
+from os import environ
 
 Owner_id = [332505589701935104, 237585716836696065, 554760937245245460]
 
@@ -13,7 +14,7 @@ def sqlEXE(statement):
     con = None
     try:
         # Connect to the database
-        con = psycopg2.connect("postgres://yjzwwijnjncubp:9c841c698f4b9b3dd09c2873e0af52ef9cb6868947d123b353d457584f344dfb@ec2-50-17-193-83.compute-1.amazonaws.com:5432/d5kopahi42g27b", sslmode="require")
+        con = psycopg2.connect(environ['DATABASE_URL'], sslmode="require")
         con.autocommit = True
         cur = con.cursor()
 
@@ -111,6 +112,7 @@ class Utility(Cog) :
             twitchID = await self.client.wait_for("message", check=pred)
 
             twitchID = await twitchGet(f'users?login={twitchID}')
+            print(twitchID)
             twitchID = (twitchID['data'][0]['id'])
 
             if initUser(twitchID, str(member.id)):
