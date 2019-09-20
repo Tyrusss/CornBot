@@ -141,7 +141,7 @@ class Rewards(Cog):
                 await ctx.send("???")
 
         else:
-            ctx.send("You don't have enough credits.")
+            await ctx.send("You don't have enough credits.")
 
 
 def setup(bot):
