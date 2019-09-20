@@ -2,6 +2,7 @@ import asyncio
 import discord
 import psycopg2
 import re
+import aiohttp
 
 from discord.ext import commands
 from discord.ext.commands import Cog
@@ -60,8 +61,7 @@ def KeywordInMessage(word):
     return re.compile(r'\b({0})\b'.format(word), flags=re.IGNORECASE).search
 
 async def twitchGet(endpoint):
-    from aiohttp import ClientSession
-    async with ClientSession() as session:
+    async with aiohttp.ClientSession() as session:
         async with session.get(
             f'https://api.twitch.tv/helix/{endpoint}',
             headers={"Client-ID": "q5hm7ld6pl5azmlauqd5mxml4wdklj"}) as r:
@@ -110,10 +110,8 @@ class Utility(Cog) :
                 return m.author == ctx.message.author and m.channel == ctx.message.channel
             twitchID = await self.client.wait_for("message", check=pred)
 
-            twitchID = twitchGet(f'users?login={twitchID}')
-            print(twitchID)
+            twitchID = asyncio.run(twitchGet(f'users?login={twitchID}'))
             twitchID = (twitchID['data'][0]['id'])
-            print(twitchID)
 
             if initUser(twitchID, str(member.id)):
                 await ctx.send(f"{member.display_name} has been added to the database. They have started with 0 credits")
