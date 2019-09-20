@@ -6,7 +6,7 @@ from cogs.utility import thingInList, sqlEXE, initUser, Owner_id
 from discord.ext import commands
 from discord.ext.commands import Cog
 
-class credits(Cog):
+class credits_handling(Cog):
     def __init__(self, client):
         self.client = client
 

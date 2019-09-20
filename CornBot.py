@@ -5,7 +5,7 @@ import psycopg2
 import cogs.utility
 
 from cogs.utility import thingInList, sqlEXE, initUser, delUser, Utility, KeywordInMessage, twitchGet
-from cogs.credits import credits
+from cogs.credits import credits_handling
 from cogs.rewards import Rewards
 from cogs.games import Games
 from cogs.fun import Fun
@@ -25,7 +25,7 @@ client = Bot(command_prefix=commandPrefix)
 
 if __name__ == '__main__':
         client.add_cog(Utility(client))
-        client.add_cog(credits(client))
+        client.add_cog(credits_handling(client))
         client.add_cog(Rewards(client))
         client.add_cog(Games(client))
         client.add_cog(Fun(client))
