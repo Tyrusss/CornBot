@@ -26,8 +26,8 @@ class credits(Cog):
             return
 
         if ctx.message.author.id in Owner_id:
-            if not thingInList(ctx.author.id, 'credits_list'):
-                ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+            if not thingInList(str(ctx.author.id), 'credits_list'):
+                await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
                 return
             sqlEXE(f"UPDATE credits_list SET user_credits = user_credits + {credits} WHERE discordID = '{str(member.id)}'")     
             await ctx.send(f"{member.display_name} has been awarded {credits} credit(s).")
@@ -50,8 +50,8 @@ class credits(Cog):
             return
 
         if ctx.message.author.id in Owner_id:
-            if not thingInList(ctx.author.id, 'credits_list'):
-                ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+            if not thingInList(str(ctx.author.id), 'credits_list'):
+                await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
                 return
             sqlEXE(f"UPDATE credits_list SET user_credits = user_credits - {credits} WHERE discordID = '{str(member.id)}'")     
             await ctx.send(f"{member.display_name} has had {credits} credit(s) taken.")
@@ -66,15 +66,15 @@ class credits(Cog):
                     )
     async def credits(self, ctx, member : discord.Member = None):
         if member:
-            if not thingInList(ctx.author.id, 'credits_list'):
-                ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+            if not thingInList(str(ctx.author.id), 'credits_list'):
+                await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
                 return
             data = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{str(member.id)}'")
             await ctx.send(f"{member.display_name} has {str(data)[2:-3]} credits(s).")
 
         else:
-            if not thingInList(ctx.author.id, 'credits_list'):
-                ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+            if not thingInList(str(ctx.author.id), 'credits_list'):
+                await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
                 return
             data = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{str(ctx.message.author.id)}'")
             await ctx.send(f"<@{ctx.message.author.id}>, you have {str(data)[2:-3]} credits(s).")

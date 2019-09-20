@@ -36,8 +36,8 @@ class Games(Cog):
                     aliases = ["nominate"]
                     )
     async def nominate(self, ctx, *args):
-        if not thingInList(ctx.author.id, 'credits_list'):
-            ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+        if not thingInList(str(ctx.author.id), 'credits_list'):
+            await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
             return
         game = " ".join(args)
         user_credits = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{ctx.message.author.id}'")
@@ -172,8 +172,8 @@ class Games(Cog):
                     )
     async def Vote(self, ctx, *args):
 
-        if not thingInList(ctx.author.id, 'credits_list'):
-            ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+        if not thingInList(str(ctx.author.id), 'credits_list'):
+            await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
             return
         voted = str(sqlEXE(f"SELECT game_voted FROM credits_list WHERE discordID = '{str(ctx.message.author.id)}' AND game_voted = 'yes';"))
         game = " ".join(args)
