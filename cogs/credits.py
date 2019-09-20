@@ -28,7 +28,8 @@ class credits(Cog):
         if ctx.message.author.id in Owner_id:
             if not thingInList(ctx.author.id, 'credits_list'):
                 ctx.send("User must be added to the database with 'c!adduser [User]' first!")
-            sqlEXE(f"UPDATE credits_list SET user_credits = user_credits + {credits} WHERE user_id = '{str(member.id)}'")     
+                return
+            sqlEXE(f"UPDATE credits_list SET user_credits = user_credits + {credits} WHERE discordID = '{str(member.id)}'")     
             await ctx.send(f"{member.display_name} has been awarded {credits} credit(s).")
         else:
             await ctx.send("You don't have permission to use that command.")
@@ -51,7 +52,8 @@ class credits(Cog):
         if ctx.message.author.id in Owner_id:
             if not thingInList(ctx.author.id, 'credits_list'):
                 ctx.send("User must be added to the database with 'c!adduser [User]' first!")
-            sqlEXE(f"UPDATE credits_list SET user_credits = user_credits - {credits} WHERE user_id = '{str(member.id)}'")     
+                return
+            sqlEXE(f"UPDATE credits_list SET user_credits = user_credits - {credits} WHERE discordID = '{str(member.id)}'")     
             await ctx.send(f"{member.display_name} has had {credits} credit(s) taken.")
         else:
             await ctx.send("You don't have permission to use that command.")
@@ -66,13 +68,15 @@ class credits(Cog):
         if member:
             if not thingInList(ctx.author.id, 'credits_list'):
                 ctx.send("User must be added to the database with 'c!adduser [User]' first!")
-            data = sqlEXE(f"SELECT user_credits FROM credits_list WHERE user_id = '{str(member.id)}'")
+                return
+            data = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{str(member.id)}'")
             await ctx.send(f"{member.display_name} has {str(data)[2:-3]} credits(s).")
 
         else:
             if not thingInList(ctx.author.id, 'credits_list'):
                 ctx.send("User must be added to the database with 'c!adduser [User]' first!")
-            data = sqlEXE(f"SELECT user_credits FROM credits_list WHERE user_id = '{str(ctx.message.author.id)}'")
+                return
+            data = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{str(ctx.message.author.id)}'")
             await ctx.send(f"<@{ctx.message.author.id}>, you have {str(data)[2:-3]} credits(s).")
 
     # Command to reset all users' credits
@@ -107,7 +111,7 @@ class credits(Cog):
                     aliases = ["Daily"])
     @commands.cooldown(1, 60*60*24, commands.BucketType.user)
     async def daily(self, ctx):
-        sqlEXE(f"UPDATE credits_list SET user_credits = user_credits + 100 WHERE user_id = '{str(ctx.message.author.id)}';")
+        sqlEXE(f"UPDATE credits_list SET user_credits = user_credits + 100 WHERE discordID = '{str(ctx.message.author.id)}';")
         user_credits = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{ctx.message.author.id}'")
         user_credits = int(str(user_credits)[2:-3])
 

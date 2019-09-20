@@ -108,6 +108,7 @@ class Rewards(Cog):
     async def redeem(self, ctx, *args):
         if not thingInList(ctx.author.id, 'credits_list'):
             ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+            return
         reward = " ".join(args)
 
         if not thingInList(reward.title(), 'rewards_list'):
