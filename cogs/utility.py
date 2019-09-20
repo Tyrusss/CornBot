@@ -110,7 +110,7 @@ class Utility(Cog) :
                 return m.author == ctx.message.author and m.channel == ctx.message.channel
             twitchID = await self.client.wait_for("message", check=pred)
 
-            twitchID = asyncio.run(twitchGet(f'users?login={twitchID}'))
+            twitchID = await twitchGet(f'users?login={twitchID}')
             twitchID = (twitchID['data'][0]['id'])
 
             if initUser(twitchID, str(member.id)):
