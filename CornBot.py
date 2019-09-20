@@ -3,10 +3,9 @@ import discord
 import re
 import psycopg2
 import cogs.utility
-import aiohttp
 
-from cogs.utility import thingInList, sqlEXE, initUser, delUser, Utility, KeywordInMessage
-from cogs.points import Points
+from cogs.utility import thingInList, sqlEXE, initUser, delUser, Utility, KeywordInMessage, twitchGet
+from cogs.credits import credits
 from cogs.rewards import Rewards
 from cogs.games import Games
 from cogs.fun import Fun
@@ -26,58 +25,10 @@ client = Bot(command_prefix=commandPrefix)
 
 if __name__ == '__main__':
         client.add_cog(Utility(client))
-        client.add_cog(Points(client))
+        client.add_cog(credits(client))
         client.add_cog(Rewards(client))
         client.add_cog(Games(client))
         client.add_cog(Fun(client))
-
-streaming = False
-async def twitchget(streaming):
-    channel = client.get_channel(502233377965867010)
-    while True:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(
-                'https://api.twitch.tv/helix/streams?user_login=cornben',
-                headers={"Client-ID": "q5hm7ld6pl5azmlauqd5mxml4wdklj"}) as s:
-                s = await s.json()
-
-            if s["data"] == []:
-                if streaming == True:
-                    print("Stopped streaming")
-                    streaming = False
-                else:
-                    print("Still not streaming")
-                
-            if s["data"] != []:  
-                async with session.get(
-                    'https://api.twitch.tv/helix/users?login=cornben',
-                    headers={"Client-ID": "q5hm7ld6pl5azmlauqd5mxml4wdklj"}) as u:
-                    u = await u.json()
-                async with session.get(
-                    'https://api.twitch.tv/helix/games?id={}'.format(s["data"][0]["game_id"]),
-                    headers={"Client-ID": "q5hm7ld6pl5azmlauqd5mxml4wdklj"}) as g:
-                    g = await g.json()
-
-                if s["data"][0]["type"] == 'live':
-                    if streaming == False:
-                        s = s["data"][0]
-                        u = u["data"][0]
-                        g = g["data"][0]
-
-                        print("Started streaming")
-                        streaming = True
-                        Turl = "https://twitch.tv/{}".format(u["login"])
-                        e = discord.Embed(color=discord.Color(0x800080), description='[{0}]({1})'.format(s["title"], Turl))
-                        e.set_author(icon_url=u["profile_image_url"], name=u["display_name"], url=Turl)
-                        e.set_thumbnail(url=u["profile_image_url"])
-                        e.add_field(name="Game", value=g["name"], inline=True)
-                        e.add_field(name="Viewers", value=s["viewer_count"], inline=True)
-                        e.set_image(url=s["thumbnail_url"].format(width=320, height=180))
-                        await channel.send("Hey "+"@everyone"+"! {0} is streaming {1} on {2}! Go check it out!".format(u["display_name"], g["name"], Turl), embed=e)
-                    else:
-                        print("Still streaming")
-
-            await asyncio.sleep(5)
 
 @client.event
 async def on_message(message):
@@ -129,9 +80,9 @@ async def on_ready():
     print(client.user.id)
     print('------')
 
-    if str(sqlEXE("SELECT EXISTS(SELECT * FROM information_schema.tables where table_name = 'points_list');")) == "[(False,)]":
-        sqlEXE("CREATE TABLE points_list(user_id TEXT PRIMARY KEY, user_points INTEGER, game_voted BOOLEAN)")
-        print("init points_list")
+    if str(sqlEXE("SELECT EXISTS(SELECT * FROM information_schema.tables where table_name = 'credits_list');")) == "[(False,)]":
+        sqlEXE("CREATE TABLE credits_list(user_id SERIAL PRIMARY KEY, discordID TEXT, twitchID TEXT, user_credits INTEGER, game_voted BOOLEAN)")
+        print("init credits_list")
     if str(sqlEXE("SELECT EXISTS(SELECT * FROM information_schema.tables where table_name = 'rewards_list');")) == "[(False,)]":
         sqlEXE("CREATE TABLE rewards_list(reward_name TEXT PRIMARY KEY, reward_desc TEXT, price INTEGER)")
         print("init rewards_list")
@@ -141,10 +92,6 @@ async def on_ready():
     if str(sqlEXE("SELECT EXISTS(SELECT * FROM information_schema.tables where table_name = 'games_pending');")) == "[(False,)]":
         sqlEXE("CREATE TABLE games_pending(game_name TEXT PRIMARY KEY, suggestor TEXT, status TEXT)")
         print("init games_pending")
-
-        loop = asyncio.get_running_loop()
-        asyncio.create_task(twitchget(streaming))
-        print(loop)
 
 # Actually run the damn thing
 client.run(TOKEN)

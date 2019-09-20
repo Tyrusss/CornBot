@@ -6,7 +6,7 @@ import re
 from discord.ext import commands
 from discord.ext.commands import Cog
 
-Owner_id = [332505589701935104, 237585716836696065]
+Owner_id = [332505589701935104, 237585716836696065, 554760937245245460]
 
 def sqlEXE(statement):
     con = None
@@ -32,22 +32,26 @@ def sqlEXE(statement):
 def thingInList(thing, table):
     if str(sqlEXE(f"SELECT * FROM {table}")) != "[]":
         for item in sqlEXE(f"SELECT * FROM {table}"):
-            if item[0] == thing:
-                return True
+            for data in item:
+                if data == thing:
+                    return True
     return False
 
-# Add a user to the points list
-def initUser(member: discord.Member):
-    if thingInList(str(member.id), 'points_list') == False: # Add member to list with 0 points
-        sqlEXE(f"INSERT INTO points_list(user_id, user_points, game_voted) VALUES('{str(member.id)}', 0, FALSE)")
-        return True
-    else:
-        return False
+# Add a user to the credits list
+def initUser(twitchID, member: discord.Member):
+    if thingInList(str(member.id), 'credits_list') == False: # Add member to list with 0 credits
+        if thingInList(twitchID, 'credits_list') == False:
+            
+            discordID = str(member.id)
+            sqlEXE(f"INSERT INTO credits_list(discordID, twitchID, user_credits, game_voted) VALUES('{discordID}', '{twitchID}', '{str(member.id)}', 0, FALSE)")
+            
+            return True
+    return False
 
-# Deletes a user from the points lists
+# Deletes a user from the credits lists
 def delUser(memberID):
-    if thingInList(str(memberID), 'points_list'):
-        sqlEXE(f"DELETE FROM points_list WHERE user_id = '{str(memberID)}'")
+    if thingInList(str(memberID), 'credits_list'):
+        sqlEXE(f"DELETE FROM credits_list WHERE discordID = '{str(memberID)}'")
         return True
     else:
         return False
@@ -56,6 +60,14 @@ def delUser(memberID):
 def KeywordInMessage(word):
     return re.compile(r'\b({0})\b'.format(word), flags=re.IGNORECASE).search
 
+async def twitchGet(endcredit):
+    from aiohttp import ClientSession
+    async with ClientSession() as session:
+        async with session.get(
+            f'https://api.twitch.tv/helix/{endcredit}',
+            headers={"Client-ID": "q5hm7ld6pl5azmlauqd5mxml4wdklj"}) as r:
+            r = await r.json()
+            return r
 
 class Utility(Cog) :
     def __init__(self, client):
@@ -86,25 +98,30 @@ class Utility(Cog) :
         except AttributeError:
             await ctx.send("You did not specify a user!")
 
-    # Command to add user to points list
+    # Command to add user to credits list
     @commands.command(name = "AddUser",
-                    description = "Adds a user to the points document",
+                    description = "Adds a user to the credits document",
                     brief = "Add <member> to doc",
                     aliases = ["UserAdd", "InitUser", "adduser", "useradd", "inituser", "auser", "aUser"]
                     )
     async def AddUser(self, ctx, member : discord.Member):
         if ctx.message.author.id in Owner_id:
-            if initUser(member):
-                await ctx.send(f"<@{member.id}> has been added to the list")
-                await ctx.send("They have started with 0 points.")
+            await ctx.send(f"What is {member.display_name}'s Twitch username?'")
+            def pred(m):
+                return m.author == ctx.message.author and m.channel == ctx.message.channel
+            twitchID = await self.client.wait_for("message", check=pred)
+
+            if initUser(twitchID, member.id):
+                await ctx.send(f"{member.display_name} has been added to the database. They have started with 0 credits")
             else:
-                await ctx.send("Member is already in the list.")
+                await ctx.send("That user is already in the list!")
+
         else:
             await ctx.send("You don't have permission to use that command.")
 
-    # Command to delete user from points list
+    # Command to delete user from credits list
     @commands.command(name = "DelUser",
-                    description = "Deletes a user to the points document",
+                    description = "Deletes a user to the credits document",
                     brief = "Delete <member> from doc",
                     aliases = ["UserDel", "deluser", "userdel", "duser", "dUser"]
                     )

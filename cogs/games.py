@@ -36,21 +36,23 @@ class Games(Cog):
                     aliases = ["nominate"]
                     )
     async def nominate(self, ctx, *args):
-        initUser(ctx.message.author)
+        if not thingInList(ctx.author.id, 'credits_list'):
+            command = self.client.get_commands('AddUser')
+            await ctx.invoke(command)
         game = " ".join(args)
-        user_points = sqlEXE(f"SELECT user_points FROM points_list WHERE user_id = '{ctx.message.author.id}'")
-        user_points = int(str(user_points)[2:-3])
+        user_credits = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{ctx.message.author.id}'")
+        user_credits = int(str(user_credits)[2:-3])
 
         if ctx.message.author.id not in Owner_id:
-            if user_points >= 300:
+            if user_credits >= 300:
                 result = addGame(game, str(ctx.message.author.id), False)
                 await ctx.send(result)
                 if KeywordInMessage("pending")(result):
                     Cornben = self.client.get_user(Owner_id[0])
                     await Cornben.send(f"{ctx.message.author.name} has nominated {capwords(game)}.\n\nUse c!accept {capwords(game)}\nor c!reject {capwords(game)}")
-                sqlEXE(f"UPDATE points_list SET user_points = user_points - 300 WHERE user_id = '{str(ctx.message.author.id)}';")
+                sqlEXE(f"UPDATE credits_list SET user_credits = user_credits - 300 WHERE discordID = '{str(ctx.message.author.id)}';")
             else:
-                await ctx.send("You don't have enough points! You need 300 to nominate a game.")
+                await ctx.send("You don't have enough credits! You need 300 to nominate a game.")
         else:
             result = addGame(game, str(ctx.message.author.id), False)
             await ctx.send(result)
@@ -109,9 +111,9 @@ class Games(Cog):
 
             suggestor = int(str(sqlEXE(f"SELECT suggestor FROM games_pending WHERE game_name = '{capwords(game)}';"))[3:-4])
             suggestor = self.client.get_user(suggestor)
-            sqlEXE(f"UPDATE points_list SET user_points = user_points + 300 WHERE user_id = '{suggestor.id}';")
+            sqlEXE(f"UPDATE credits_list SET user_credits = user_credits + 300 WHERE discordID = '{suggestor.id}';")
 
-            await suggestor.send(f"Corny Boy has rejected your suggestion: {capwords(game)}\n300 points have been refunded to your balance.")
+            await suggestor.send(f"Corny Boy has rejected your suggestion: {capwords(game)}\n300 credits have been refunded to your balance.")
 
     # Command to list all games in Games_List
     @commands.command(name = "Games",
@@ -155,14 +157,14 @@ class Games(Cog):
 
             if sure.content.title() == 'Y':
                 sqlEXE("DELETE FROM games_list; DELETE FROM games_pending WHERE status != 'Pending';")
-                sqlEXE("UPDATE points_list SET game_voted = FALSE;")
+                sqlEXE("UPDATE credits_list SET game_voted = FALSE;")
                 await ctx.send("Succesfully reset.")
             elif sure.content.title() == 'N':
                 await ctx.send("Then why did you invoke this command? smh")
             else:
                 await ctx.send("???")
 
-    # Command to add points to a game
+    # Command to add credits to a game
     @commands.command(name = "Vote",
                     description = "Vote for the game you want Cloutboy to play next",
                     brief = "Vote for a game",
@@ -170,14 +172,16 @@ class Games(Cog):
                     )
     async def Vote(self, ctx, *args):
 
-        initUser(ctx.message.author)
-        voted = str(sqlEXE(f"SELECT game_voted FROM points_list WHERE user_id = '{str(ctx.message.author.id)}' AND game_voted = 'yes';"))
+        if not thingInList(ctx.author.id, 'credits_list'):
+            command = self.client.get_commands('AddUser')
+            await ctx.invoke(command)
+        voted = str(sqlEXE(f"SELECT game_voted FROM credits_list WHERE discordID = '{str(ctx.message.author.id)}' AND game_voted = 'yes';"))
         game = " ".join(args)
         
         if thingInList(capwords(game), 'games_list'):
 
             if len(voted) == 2:
-                sqlEXE(f"UPDATE points_list SET game_voted = TRUE WHERE user_id = '{str(ctx.message.author.id)}';")
+                sqlEXE(f"UPDATE credits_list SET game_voted = TRUE WHERE discordID = '{str(ctx.message.author.id)}';")
                 sqlEXE(f"UPDATE games_list SET votes = votes + 1 WHERE game_name = '{capwords(game)}'")
                 await ctx.send(f"{ctx.message.author.mention}, successfully voted for {capwords(game)}.")
 

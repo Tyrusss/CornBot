@@ -41,7 +41,7 @@ class Rewards(Cog):
 
             rewardDesc = rewardDesc.content
 
-            await ctx.send("And how many points will it take to redeem this reward? (Type '#cancel#' to cancel this reward)")
+            await ctx.send("And how many credits will it take to redeem this reward? (Type '#cancel#' to cancel this reward)")
             rewardCost = await self.client.wait_for("message", check=pred)
 
             if rewardCost.content == "#cancel#":
@@ -106,20 +106,22 @@ class Rewards(Cog):
                     aliases = ["redeem", "buy", "Buy"]
                     )
     async def redeem(self, ctx, *args):
-        initUser(ctx.message.author)
+        if not thingInList(ctx.author.id, 'credits_list'):
+            command = self.client.get_commands('AddUser')
+            await ctx.invoke(command)
         reward = " ".join(args)
 
         if not thingInList(reward.title(), 'rewards_list'):
             await ctx.send(f"'{reward.title()}' is not in the list. Use c!rewards to see the list of available rewards.")
             return
 
-        user_points = sqlEXE(f"SELECT user_points FROM points_list WHERE user_id = '{ctx.message.author.id}'")
-        user_points = int(str(user_points)[2:-3])
+        user_credits = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{ctx.message.author.id}'")
+        user_credits = int(str(user_credits)[2:-3])
 
         reward_cost = sqlEXE(f"SELECT price FROM rewards_list WHERE reward_name = '{reward.title()}'")
         reward_cost = int(str(reward_cost)[2:-3])
 
-        if user_points >= reward_cost:
+        if user_credits >= reward_cost:
             await ctx.send(f"Are you sure you want to redeem {reward.title()}? (y/n)")
             def pred(m):
                 return m.author == ctx.message.author and m.channel == ctx.message.channel
@@ -127,9 +129,9 @@ class Rewards(Cog):
 
             if sure.content.title() == 'Y':
 
-                sqlEXE(f"UPDATE points_list SET user_points = user_points - {reward_cost}")
+                sqlEXE(f"UPDATE credits_list SET user_credits = user_credits - {reward_cost}")
                 
-                await ctx.send(f"Success! Your new balance is {user_points - reward_cost}.")
+                await ctx.send(f"Success! Your new balance is {user_credits - reward_cost}.")
 
                 Cornben = self.client.get_user(Owner_id[0])
                 await Cornben.send(f"{ctx.message.author.name} has redeemed {reward.title()}.")
@@ -139,7 +141,7 @@ class Rewards(Cog):
                 await ctx.send("???")
 
         else:
-            ctx.send("You don't have enough points.")
+            ctx.send("You don't have enough credits.")
 
 
 def setup(bot):
