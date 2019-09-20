@@ -110,7 +110,10 @@ class Utility(Cog) :
                 return m.author == ctx.message.author and m.channel == ctx.message.channel
             twitchID = await self.client.wait_for("message", check=pred)
 
-            twitchID = str(twitchGet(f'users?login={twitchID}')['data'][0]['id'])
+            twitchID = twitchGet(f'users?login={twitchID}')
+            print(twitchID)
+            twitchID = (twitchID['data'][0]['id'])
+            print(twitchID)
 
             if initUser(twitchID, str(member.id)):
                 await ctx.send(f"{member.display_name} has been added to the database. They have started with 0 credits")
