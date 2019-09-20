@@ -111,8 +111,7 @@ class Utility(Cog) :
                 return m.author == ctx.message.author and m.channel == ctx.message.channel
             twitchID = await self.client.wait_for("message", check=pred)
 
-            twitchID = await twitchGet(f'users?login={twitchID}')
-            print(twitchID)
+            twitchID = await twitchGet(f'users?login={twitchID.content}')
             twitchID = (twitchID['data'][0]['id'])
 
             if initUser(twitchID, str(member.id)):
