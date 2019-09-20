@@ -107,8 +107,7 @@ class Rewards(Cog):
                     )
     async def redeem(self, ctx, *args):
         if not thingInList(ctx.author.id, 'credits_list'):
-            command = self.client.get_commands('AddUser')
-            await ctx.invoke(command)
+            ctx.send("User must be added to the database with 'c!adduser [User]' first!")
         reward = " ".join(args)
 
         if not thingInList(reward.title(), 'rewards_list'):

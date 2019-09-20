@@ -27,8 +27,7 @@ class credits(Cog):
 
         if ctx.message.author.id in Owner_id:
             if not thingInList(ctx.author.id, 'credits_list'):
-                command = self.client.get_commands('AddUser')
-                await ctx.invoke(command)
+                ctx.send("User must be added to the database with 'c!adduser [User]' first!")
             sqlEXE(f"UPDATE credits_list SET user_credits = user_credits + {credits} WHERE user_id = '{str(member.id)}'")     
             await ctx.send(f"{member.display_name} has been awarded {credits} credit(s).")
         else:
@@ -51,8 +50,7 @@ class credits(Cog):
 
         if ctx.message.author.id in Owner_id:
             if not thingInList(ctx.author.id, 'credits_list'):
-                command = self.client.get_commands('AddUser')
-                await ctx.invoke(command)
+                ctx.send("User must be added to the database with 'c!adduser [User]' first!")
             sqlEXE(f"UPDATE credits_list SET user_credits = user_credits - {credits} WHERE user_id = '{str(member.id)}'")     
             await ctx.send(f"{member.display_name} has had {credits} credit(s) taken.")
         else:
@@ -67,15 +65,13 @@ class credits(Cog):
     async def credits(self, ctx, member : discord.Member = None):
         if member:
             if not thingInList(ctx.author.id, 'credits_list'):
-                command = self.client.get_commands('AddUser')
-                await ctx.invoke(command)
+                ctx.send("User must be added to the database with 'c!adduser [User]' first!")
             data = sqlEXE(f"SELECT user_credits FROM credits_list WHERE user_id = '{str(member.id)}'")
             await ctx.send(f"{member.display_name} has {str(data)[2:-3]} credits(s).")
 
         else:
             if not thingInList(ctx.author.id, 'credits_list'):
-                command = self.client.get_commands('AddUser')
-                await ctx.invoke(command)
+                ctx.send("User must be added to the database with 'c!adduser [User]' first!")
             data = sqlEXE(f"SELECT user_credits FROM credits_list WHERE user_id = '{str(ctx.message.author.id)}'")
             await ctx.send(f"<@{ctx.message.author.id}>, you have {str(data)[2:-3]} credits(s).")
 
