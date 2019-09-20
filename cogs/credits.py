@@ -6,7 +6,7 @@ from cogs.utility import thingInList, sqlEXE, initUser, Owner_id
 from discord.ext import commands
 from discord.ext.commands import Cog
 
-class credits_handling(Cog):
+class credits(Cog):
     def __init__(self, client):
         self.client = client
 
@@ -62,7 +62,7 @@ class credits_handling(Cog):
     @commands.command(name = "credits",
                     description = "Check how many credits a user has",
                     brief = "Check credits",
-                    aliases =["credits", 'check', 'Check']
+                    aliases =["credit", 'check', 'Check']
                     )
     async def credits(self, ctx, member : discord.Member = None):
         if member:
