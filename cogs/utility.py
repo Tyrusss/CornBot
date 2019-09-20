@@ -38,12 +38,11 @@ def thingInList(thing, table):
     return False
 
 # Add a user to the credits list
-def initUser(twitchID, member: discord.Member):
-    if thingInList(str(member.id), 'credits_list') == False: # Add member to list with 0 credits
+def initUser(twitchID, discordID):
+    if thingInList(discordID, 'credits_list') == False: # Add member to list with 0 credits
         if thingInList(twitchID, 'credits_list') == False:
             
-            discordID = str(member.id)
-            sqlEXE(f"INSERT INTO credits_list(discordID, twitchID, user_credits, game_voted) VALUES('{discordID}', '{twitchID}', '{str(member.id)}', 0, FALSE)")
+            sqlEXE(f"INSERT INTO credits_list(discordID, twitchID, user_credits, game_voted) VALUES('{discordID}', '{twitchID}', 0, FALSE)")
             
             return True
     return False
@@ -60,11 +59,11 @@ def delUser(memberID):
 def KeywordInMessage(word):
     return re.compile(r'\b({0})\b'.format(word), flags=re.IGNORECASE).search
 
-async def twitchGet(endcredit):
+async def twitchGet(endpoint):
     from aiohttp import ClientSession
     async with ClientSession() as session:
         async with session.get(
-            f'https://api.twitch.tv/helix/{endcredit}',
+            f'https://api.twitch.tv/helix/{endpoint}',
             headers={"Client-ID": "q5hm7ld6pl5azmlauqd5mxml4wdklj"}) as r:
             r = await r.json()
             return r
@@ -111,7 +110,11 @@ class Utility(Cog) :
                 return m.author == ctx.message.author and m.channel == ctx.message.channel
             twitchID = await self.client.wait_for("message", check=pred)
 
-            if initUser(twitchID, member.id):
+            twitchID = twitchGet(f'users?login={twitchID}')
+            twitchID = await twitchID.json()
+            twitchID = twitchID['data'][0]['id']
+
+            if initUser(twitchID, str(member.id)):
                 await ctx.send(f"{member.display_name} has been added to the database. They have started with 0 credits")
             else:
                 await ctx.send("That user is already in the list!")
