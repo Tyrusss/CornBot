@@ -159,11 +159,7 @@ class Utility(Cog) :
         twitchID = twitchID['data'][0]['id']
 
         if thingInList(twitchID, 'credits_list'):
-            linked_user = sqlEXE(f"SELECT discordID FROM credits_list WHERE twitchID = '{twitchID}';")
-            linked_user = linked_user[3:-4]
-            linked_user = await self.client.get_user(int(linked_user))
-
-            await ctx.send(f"That Twitch account is already linked to {linked_user.display_name}.")
+            await ctx.send(f"That Twitch account is already in the database.\nYou should use c!addDiscord [twitchUsername] to link your Discord account to this Twitch account.")
             return
 
         sqlEXE(f"UPDATE credits_list SET twitchID = '{twitchID}' WHERE discordID = '{ctx.message.author.id}';")
