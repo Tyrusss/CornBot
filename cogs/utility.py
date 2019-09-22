@@ -40,14 +40,27 @@ def thingInList(thing, table):
     return False
 
 # Add a user to the credits list
-def initUser(twitchID, discordID):
-    if thingInList(discordID, 'credits_list') == False: # Add member to list with 0 credits
-        if thingInList(twitchID, 'credits_list') == False:
-            
-            sqlEXE(f"INSERT INTO credits_list(discordID, twitchID, user_credits, game_voted) VALUES('{discordID}', '{twitchID}', 0, FALSE)")
-            
+def initUser(twitchID = None, discordID = None):
+    if twitchID and discordID:
+        if thingInList(discordID, 'credits_list') == False: # Add member to list with 0 credits
+            if thingInList(twitchID, 'credits_list') == False:
+                
+                sqlEXE(f"INSERT INTO credits_list(discordID, twitchID, user_credits, game_voted) VALUES('{discordID}', '{twitchID}', 0, FALSE)")
+                
+                return True
+        return False
+
+    if discordID and not twitchID:
+        if thingInList(discordID, 'credits_list') == False:
+            sqlEXE(f"INSERT INTO credits_list(discordID, user_credits, game_voted) VALUES('{discordID}', 0, FALSE)")
             return True
-    return False
+        return False
+
+    if twitchID and not discordID:
+        if thingInList(twitchID, 'credits_list') == False:
+            sqlEXE(f"INSERT INTO credits_list(twitchID, user_credits, game_voted) VALUES('{twitchID}', 0, FALSE)")
+            return True
+        return False
 
 # Deletes a user from the credits lists
 def delUser(memberID):
@@ -106,16 +119,10 @@ class Utility(Cog) :
                     )
     async def AddUser(self, ctx, member : discord.Member):
         if ctx.message.author.id in Owner_id:
-            await ctx.send(f"What is {member.display_name}'s Twitch username?'")
-            def pred(m):
-                return m.author == ctx.message.author and m.channel == ctx.message.channel
-            twitchID = await self.client.wait_for("message", check=pred)
 
-            twitchID = await twitchGet(f'users?login={twitchID.content}')
-            twitchID = (twitchID['data'][0]['id'])
-
-            if initUser(twitchID, str(member.id)):
+            if initUser(None, str(member.id)):
                 await ctx.send(f"{member.display_name} has been added to the database. They have started with 0 credits")
+                await ctx.send("User should use `c!addTwitch [Twitch username]` to link their Twitch account.")
             else:
                 await ctx.send("That user is already in the list!")
 
@@ -124,7 +131,7 @@ class Utility(Cog) :
 
     # Command to delete user from credits list
     @commands.command(name = "DelUser",
-                    description = "Deletes a user to the credits document",
+                    description = "Deletes a user from the credits document",
                     brief = "Delete <member> from doc",
                     aliases = ["UserDel", "deluser", "userdel", "duser", "dUser"]
                     )
@@ -137,6 +144,57 @@ class Utility(Cog) :
         else:
             await ctx.send("You don't have permission to use that command.")    
 
+    # Command to link Twitch account
+    @commands.command(name = 'addTwitch',
+                    description = 'Links a user\'s Twitch account. Use if your Discord is in the database, but not your Twitch.',
+                    brief = 'Link a Twitch account',
+                    aliases = ['addtwitch', 'Addtwitch', 'AddTwitch']
+                    )
+    async def AddTwitch(self, ctx, username):
+
+        initUser(None, str(ctx.message.author.id)) # init user
+
+        twitchID = await twitchGet(f'users?login={username}')
+        twitchName = twitchID['data'][0]['display_name']
+        twitchID = twitchID['data'][0]['id']
+
+        if thingInList(twitchID, 'credits_list'):
+            linked_user = sqlEXE(f"SELECT discordID FROM credits_list WHERE twitchID = '{twitchID}';")
+            linked_user = linked_user[3:-4]
+            linked_user = await self.client.get_user(int(linked_user))
+
+            await ctx.send(f"That Twitch account is already linked to {linked_user.display_name}.")
+            return
+
+        sqlEXE(f"UPDATE credits_list SET twitchID = '{username}' WHERE discordID = '{ctx.message.author.id}';")
+        await ctx.send(f"{ctx.message.author.display_name} linked to {twitchName} successfully!")
+
+    # Command to link Discord account
+    @commands.command(name = 'addDiscord',
+                    description = 'Links a user\'s Discord account. Use if your Twitch is in the database, but not your Discord.',
+                    brief = 'Link a Discord account',
+                    aliases = ['addDiscord', 'Adddiscord', 'AddDiscord']
+                    )
+    async def AddDiscord(self, ctx, TwitchUsername):
+
+        initUser(None, str(ctx.message.author.id)) # init user
+
+        twitchID = await twitchGet(f'users?login={TwitchUsername}')
+        twitchName = twitchID['data'][0]['display_name']
+        twitchID = twitchID['data'][0]['id']
+        discordID = str(ctx.message.author.id)
+
+        if thingInList(discordID, 'credits_list'):
+            linked_user = sqlEXE(f"SELECT twitchID FROM credits_list WHERE twitchID = '{twitchID}';")
+            linked_user = linked_user[3:-4]
+            linked_user = await twitchGet(f'users?id={linked_user}')
+            linked_user = linked_user['data'][0]['display_name']
+
+            await ctx.send(f"This Discord account is already linked to {linked_user}.")
+            return
+
+        sqlEXE(f"UPDATE credits_list SET discordID = '{discordID}' WHERE twitchID = '{twitchID}';")
+        await ctx.send(f"{twitchName} linked to {ctx.message.author.display_name} successfully!")
 
 def setup(bot):
     bot.add_cog(Utility(bot))
