@@ -166,7 +166,7 @@ class Utility(Cog) :
             await ctx.send(f"That Twitch account is already linked to {linked_user.display_name}.")
             return
 
-        sqlEXE(f"UPDATE credits_list SET twitchID = '{username}' WHERE discordID = '{ctx.message.author.id}';")
+        sqlEXE(f"UPDATE credits_list SET twitchID = '{twitchID}' WHERE discordID = '{ctx.message.author.id}';")
         await ctx.send(f"{ctx.message.author.display_name} linked to {twitchName} successfully!")
 
     # Command to link Discord account
