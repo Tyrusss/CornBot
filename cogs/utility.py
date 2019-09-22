@@ -173,7 +173,7 @@ class Utility(Cog) :
     @commands.command(name = 'addDiscord',
                     description = 'Links a user\'s Discord account. Use if your Twitch is in the database, but not your Discord.',
                     brief = 'Link a Discord account',
-                    aliases = ['addDiscord', 'Adddiscord', 'AddDiscord']
+                    aliases = ['adddiscord', 'Adddiscord', 'AddDiscord']
                     )
     async def AddDiscord(self, ctx, TwitchUsername):
 
