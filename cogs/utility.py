@@ -151,15 +151,16 @@ class Utility(Cog) :
                     aliases = ['addtwitch', 'Addtwitch', 'AddTwitch']
                     )
     async def AddTwitch(self, ctx, username):
-
-        initUser(None, str(ctx.message.author.id)) # init user
-
         twitchID = await twitchGet(f'users?login={username}')
         twitchName = twitchID['data'][0]['display_name']
         twitchID = twitchID['data'][0]['id']
 
+        if not thingInList(str(ctx.message.author.id), 'credits_list'):
+            await ctx.send("Your Discord account is not in the database.\nUse c!addDiscord [twitchUsername] if your Twitch account is.")
+            return
+
         if thingInList(twitchID, 'credits_list'):
-            await ctx.send(f"That Twitch account is already in the database.\nYou should use c!addDiscord [twitchUsername] to link your Discord account to this Twitch account.")
+            await ctx.send("That Twitch account is already in the database.\nYou should use c!addDiscord [twitchUsername] to link your Discord account to your Twitch account.")
             return
 
         sqlEXE(f"UPDATE credits_list SET twitchID = '{twitchID}' WHERE discordID = '{ctx.message.author.id}';")
@@ -177,6 +178,10 @@ class Utility(Cog) :
         twitchName = twitchID['data'][0]['display_name']
         twitchID = twitchID['data'][0]['id']
         discordID = str(ctx.message.author.id)
+
+        if not thingInList(str(twitchID), 'credits_list'):
+            await ctx.send("That Twitch account is not in the database.\nUse c!addTwitch [twitchUsername] if your Discord account is.")
+            return
 
         if thingInList(discordID, 'credits_list'):
             await ctx.send(f"This Discord account is already in the database.\nYou should use c!addTwitch [username] to link your Twitch account to this Discord account.")
