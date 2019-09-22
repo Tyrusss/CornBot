@@ -177,20 +177,13 @@ class Utility(Cog) :
                     )
     async def AddDiscord(self, ctx, TwitchUsername):
 
-        initUser(None, str(ctx.message.author.id)) # init user
-
         twitchID = await twitchGet(f'users?login={TwitchUsername}')
         twitchName = twitchID['data'][0]['display_name']
         twitchID = twitchID['data'][0]['id']
         discordID = str(ctx.message.author.id)
 
         if thingInList(discordID, 'credits_list'):
-            linked_user = sqlEXE(f"SELECT twitchID FROM credits_list WHERE twitchID = '{twitchID}';")
-            linked_user = linked_user[3:-4]
-            linked_user = await twitchGet(f'users?id={linked_user}')
-            linked_user = linked_user['data'][0]['display_name']
-
-            await ctx.send(f"This Discord account is already linked to {linked_user}.")
+            await ctx.send(f"This Discord account is already in the database.\nYou should use c!addTwitch [username] to link your Twitch account to this Discord account.")
             return
 
         sqlEXE(f"UPDATE credits_list SET discordID = '{discordID}' WHERE twitchID = '{twitchID}';")
