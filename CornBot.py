@@ -4,8 +4,8 @@ import re
 import psycopg2
 import cogs.utility
 
-from cogs.utility import thingInList, sqlEXE, initUser, delUser, Utility, KeywordInMessage, twitchGet
-from cogs.credits import credits
+from cogs.utility import thingInList, sqlEXE, delUser, Utility, KeywordInMessage, twitchGet
+from cogs.credits import Credits
 from cogs.rewards import Rewards
 from cogs.games import Games
 from cogs.fun import Fun
@@ -25,7 +25,7 @@ client = Bot(command_prefix=commandPrefix)
 
 if __name__ == '__main__':
         client.add_cog(Utility(client))
-        client.add_cog(credits(client))
+        client.add_cog(Credits(client))
         client.add_cog(Rewards(client))
         client.add_cog(Games(client))
         client.add_cog(Fun(client))
@@ -35,17 +35,13 @@ async def on_message(message):
     if message.author == client.user:
         return # Don't reply to self
 
-    if KeywordInMessage("daddy")(message.content):
-        await message.channel.send("UwU")
+    if KeywordInMessage("zootr")(message.content):
+        await message.channel.send("OoTR*")
         await asyncio.sleep(0.5)
 
-    elif KeywordInMessage("UwU")(message.content):
-        await message.channel.send("Daddy")
+    if KeywordInMessage("zooter")(message.content):
+        await message.channel.send("OoTR*")
         await asyncio.sleep(0.5)
-
-    elif KeywordInMessage("dinkster")(message.content):
-        await message.channel.send("https://www.youtube.com/watch?v=bWE6Z3F-RwI")
-        await asyncio.sleep(1)
 
     # Allow for commands to be processed while on_message occurs
     await client.process_commands(message)
@@ -66,7 +62,6 @@ async def on_command_error(ctx, error):
     elif isinstance(error, commands.BadArgument):
         await ctx.send("Member not found.")
 
-
     # If not accounted for, raise anyway so we can still see it
     else:
         raise error
@@ -81,7 +76,7 @@ async def on_ready():
     print('------')
 
     if str(sqlEXE("SELECT EXISTS(SELECT * FROM information_schema.tables where table_name = 'credits_list');")) == "[(False,)]":
-        sqlEXE("CREATE TABLE credits_list(user_id SERIAL PRIMARY KEY, discordID TEXT, twitchID TEXT, user_credits INTEGER, game_voted BOOLEAN)")
+        sqlEXE("CREATE TABLE credits_list(user_id SERIAL PRIMARY KEY, discordID TEXT, twitchID TEXT, passwordHash TEXT, user_credits INTEGER, game_voted BOOLEAN)")
         print("init credits_list")
     if str(sqlEXE("SELECT EXISTS(SELECT * FROM information_schema.tables where table_name = 'rewards_list');")) == "[(False,)]":
         sqlEXE("CREATE TABLE rewards_list(reward_name TEXT PRIMARY KEY, reward_desc TEXT, price INTEGER)")

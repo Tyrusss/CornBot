@@ -2,7 +2,7 @@ import asyncio
 import discord
 import psycopg2
 
-from cogs.utility import thingInList, sqlEXE, initUser, Owner_id
+from cogs.utility import thingInList, sqlEXE, Owner_id
 from discord.ext import commands
 from discord.ext.commands import Cog
 from string import capwords
@@ -107,7 +107,7 @@ class Rewards(Cog):
                     )
     async def redeem(self, ctx, *args):
         if not thingInList(str(ctx.author.id), 'credits_list'):
-            await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+            await ctx.send("You're not in the database! Do `c!register` to register your Discord account, or do `c!login` to link to an existing Twitch account")
             return
         reward = " ".join(args)
 

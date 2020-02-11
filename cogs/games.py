@@ -2,7 +2,7 @@ import asyncio
 import discord
 import psycopg2
 
-from cogs.utility import thingInList, sqlEXE, initUser, KeywordInMessage, Owner_id
+from cogs.utility import thingInList, sqlEXE, KeywordInMessage, Owner_id
 from discord.ext import commands
 from discord.ext.commands import Cog
 from string import capwords
@@ -37,7 +37,7 @@ class Games(Cog):
                     )
     async def nominate(self, ctx, *args):
         if not thingInList(str(ctx.author.id), 'credits_list'):
-            await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+            await ctx.send("You're not in the database! Do `c!register` to register your Discord account, or do `c!login` to link to an existing Twitch account")
             return
         game = " ".join(args)
         user_credits = sqlEXE(f"SELECT user_credits FROM credits_list WHERE discordID = '{ctx.message.author.id}'")
@@ -173,7 +173,7 @@ class Games(Cog):
     async def Vote(self, ctx, *args):
 
         if not thingInList(str(ctx.author.id), 'credits_list'):
-            await ctx.send("User must be added to the database with 'c!adduser [User]' first!")
+            await ctx.send("You're not in the database! Do `c!register` to register your Discord account, or do `c!login` to link to an existing Twitch account")
             return
         voted = str(sqlEXE(f"SELECT game_voted FROM credits_list WHERE discordID = '{str(ctx.message.author.id)}' AND game_voted = 'yes';"))
         game = " ".join(args)
